@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>飞机大战</title>
+	<style type="text/css">
+		*{
+			margin:0;
+			padding: 0;
+		}
+		.bg{
+			width:320px;
+			height:568px;
+			background: url(img/background_1.png);
+			margin:30px auto;
+			position: relative;
+			overflow: hidden;
+		}
+	</style>
+	<script type="text/javascript" src="js/jquery-3.0.0.js"></script>
+	<script type="text/javascript" src="js/jquery-move.js"></script>
+	<script type="text/javascript" src="js/jquery-impact.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			//创建我方飞机图片
+			var plane = $('<img src="img/my.gif" >');	
+
+			//为飞机图片设置起始点
+			plane.css({
+				"position":"absolute",
+				"left" : "127px",
+				"top" : "478px"
+			})		
+
+			//将飞机图片插入到class=bg的DIV标签中
+			$('.bg').append(plane);
+
+			//调用移动插件，使我方飞机开始移动
+			plane.objectMove();
+
+
+			//我方飞机和敌机碰撞
+			$(plane).impact("img/enemy1_fly_1.png",function(a,b){
+				//碰撞发生的事情
+				$(a).attr('src','img/myover.gif');
+				$(b).attr('src','img/enemy1_fly_3.gif');
+
+				clearInterval(timer1);//关闭创建敌机的方法
+				clearInterval(timer2);//关闭创建子弹的方法
+				$('.bg').stop();//让背景图停住
+				$('img').stop();//让子弹和敌机停住
+				$('img[src="img/bullet1.png"]').remove();//将停住的子弹删除
+			});
+
+			var bgPositionY = 1; //改变背景图初始定位值
+
+			//让背景图不断移动
+			function bgMove(){
+
+				//设置class=bg的div标签中的背景图的位置，30毫秒改变一次，每当改变完成之后使位置计数器累加并且重新调用移动函数
+
+				$('.bg').animate({
+					"background-position-y" : bgPositionY
+				},30,function(){
+					bgPositionY = bgPositionY + 1;
+					bgMove();
+				});
+			}
+
+			//调用移动函数开始运行
+			bgMove();
+
+
+			//创建我方飞机子弹的函数
+			function createBullet(){
+
+				//创建子弹图片
+				var bullet = $('<img src="img/bullet1.png" >');
+
+				//设置子弹图片的初始位置
+				bullet.css({
+					"position":"absolute",
+					"left":plane.offset().left - $('.bg').offset().left  + 33,
+					"top":plane.offset().top - 54
+				})
+
+
+				//将子弹图片插入到class=bg的div当中
+				$('.bg').append(bullet);
+
+				//让子弹运动起来，让每一发子弹在1000毫秒内走-14px的位置并且删除子弹图片
+				bullet.animate({
+					"top": -14
+				},1000,function(){
+					bullet.remove();
+				});
+
+				//第一个参数：和哪个元素进行碰撞检测   （字符串的图片路径）
+				//第二个参数：函数
+				$(bullet).impact('img/enemy1_fly_1.png',function(a,b){
+					$(a).remove();
+					$(b).attr('src','img/enemy1_fly_3.gif');
+					setTimeout(function(){
+						$(b).remove();
+					},400);
+				});
+			}
+
+			//每隔150毫秒创建1发子弹
+			var timer2 = setInterval(function(){
+				createBullet();
+			},150);
+
+
+			function createEnemy(){
+
+				//创建敌机图片
+				var enemy = $('<img src="img/enemy1_fly_1.png" >');
+
+				//设置敌机初始位置
+				enemy.css({
+					"position":"absolute",
+					"left": (320 - 34) * Math.random(),
+					"top":-24
+				})
+
+				//将创建好的敌机图片添加到class=bg的div标签中
+				$(".bg").append(enemy);
+
+				enemy.animate({
+					"top":568
+				},3000,function(){
+					enemy.remove();
+				});	
+			}
+
+			var timer1 = setInterval(function(){
+				createEnemy();
+			},1000)
+		})
+	</script>
+</head>
+<body>
+	<div class="bg">
+		
+	</div>
+</body>
+</html>
